@@ -16,6 +16,7 @@ import { CurrencyRates } from './src/types/currency';
 import { CurrencyCard } from './src/components/CurrencyCard';
 import { CurrencyModal } from './src/components/CurrencyModal';
 import { QuickAmounts } from './src/components/QuickAmounts';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -101,7 +102,8 @@ export default function App() {
           {/* Badge hors-ligne */}
           {isOffline && (
             <View style={styles.offlineBadge}>
-              <Text style={styles.offlineText}>📡 Mode hors-ligne</Text>
+              <Ionicons name="cloud-offline-outline" size={14} color="#0042a5" style={{ marginRight: 6 }} />
+              <Text style={styles.offlineText}>Mode hors-ligne</Text>
             </View>
           )}
 
@@ -112,7 +114,6 @@ export default function App() {
               amount={amount}
               onChangeAmount={setAmount}
               currencyCode={fromCurrency}
-              currencyName={fromCurrency === 'EUR' ? 'Euro' : 'Devise'}
               onSelectCurrency={() => openModalFor('from')}
             />
 
@@ -125,14 +126,17 @@ export default function App() {
             <CurrencyCard
               amount={calculateResult()}
               currencyCode={toCurrency}
-              currencyName={toCurrency === 'USD' ? 'US Dollar' : 'Devise'}
               isReadOnly={true}
               valueColor="#0042a5"
               onSelectCurrency={() => openModalFor('to')}
             />
 
             {/* Boutons Montants Rapides */}
-            <QuickAmounts selectedAmount={amount} onSelect={setAmount} />
+            <QuickAmounts
+              selectedAmount={amount}
+              onSelect={setAmount}
+              currencyCode={fromCurrency}
+            />
 
             <Text style={styles.updateText}>Taux de change mis à jour il y a : 2 j</Text>
 
@@ -209,6 +213,8 @@ const styles = StyleSheet.create({
   },
   offlineBadge: {
     alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#dce6f9',
     paddingHorizontal: 14,
     paddingVertical: 6,

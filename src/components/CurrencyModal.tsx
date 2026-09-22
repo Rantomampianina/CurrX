@@ -10,6 +10,7 @@ import {
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { getCurrencyFlag } from '../utils/flag';
 import { CurrencyRates } from '../types/currency';
 
@@ -21,7 +22,7 @@ interface CurrencyModalProps {
   rates: CurrencyRates;
 }
 
-const REGIONS = ['Populaires', 'Europe', 'Amériques', 'Asie'];
+const REGIONS = ['Tous', 'Populaires', 'Europe', 'Amériques', 'Asie'];
 
 export const CurrencyModal: React.FC<CurrencyModalProps> = ({
   visible,
@@ -31,7 +32,7 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({
   rates,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('Populaires');
+  const [selectedRegion, setSelectedRegion] = useState('Tous');
 
   const currenciesArray = Object.entries(rates).map(([code, rate]) => ({
     code,
@@ -59,7 +60,7 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({
 
           {/* Barre de recherche */}
           <View style={styles.searchContainer}>
-            <Text style={styles.searchIcon}>🔍</Text>
+            <Ionicons name="search" size={18} color="#888" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Rechercher par nom ou code (ex: USD)"
@@ -187,7 +188,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   searchIcon: {
-    fontSize: 16,
     marginRight: 8,
   },
   searchInput: {

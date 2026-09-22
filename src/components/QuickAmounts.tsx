@@ -5,11 +5,35 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 interface QuickAmountsProps {
   selectedAmount: string;
   onSelect: (amount: string) => void;
+  currencyCode: string;
 }
 
 const AMOUNTS = ['100', '250', '500', '1000'];
 
-export const QuickAmounts: React.FC<QuickAmountsProps> = ({ selectedAmount, onSelect }) => {
+/** Retourne le symbole court d'une devise (€, $, £…) ou le code ISO si non trouvé. */
+const getCurrencySymbol = (code: string): string => {
+  try {
+    // Intl.NumberFormat retourne le symbole localisé pour la devise
+    const formatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(0);
+    // Extrait uniquement le symbole (retire les chiffres et espaces)
+    return formatted.replace(/[\d\s\u00A0\u202F,]/g, '').trim() || code;
+  } catch {
+    return code;
+  }
+};
+
+export const QuickAmounts: React.FC<QuickAmountsProps> = ({
+  selectedAmount,
+  onSelect,
+  currencyCode,
+}) => {
+  const symbol = getCurrencySymbol(currencyCode);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Rapide :</Text>
@@ -23,7 +47,7 @@ export const QuickAmounts: React.FC<QuickAmountsProps> = ({ selectedAmount, onSe
               onPress={() => onSelect(amt)}
             >
               <Text style={[styles.text, isSelected && styles.textSelected]}>
-                {amt} €
+                {amt} {symbol}
               </Text>
             </TouchableOpacity>
           );
