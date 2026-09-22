@@ -14,9 +14,12 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getLatestRates } from './src/services/currencyService';
 import { CurrencyRates } from './src/types/currency';
 import { CurrencyCard } from './src/components/CurrencyCard';
+import { CurrencyModal } from './src/components/CurrencyModal';
 import { QuickAmounts } from './src/components/QuickAmounts';
 
 export default function App() {
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [selectingTarget, setSelectingTarget] = useState<'from' | 'to'>('from');
   const [rates, setRates] = useState<CurrencyRates>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [isOffline, setIsOffline] = useState<boolean>(false);
@@ -52,6 +55,19 @@ export default function App() {
   const handleSwap = () => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
+  };
+
+  const openModalFor = (target: 'from' | 'to') => {
+    setSelectingTarget(target);
+    setModalVisible(true);
+  };
+
+  const handleSelectCurrency = (code: string) => {
+    if (selectingTarget === 'from') {
+      setFromCurrency(code);
+    } else {
+      setToCurrency(code);
+    }
   };
 
   if (loading) {
@@ -97,6 +113,7 @@ export default function App() {
               onChangeAmount={setAmount}
               currencyCode={fromCurrency}
               currencyName={fromCurrency === 'EUR' ? 'Euro' : 'Devise'}
+              onSelectCurrency={() => openModalFor('from')}
             />
 
             {/* Bouton Swap central */}
@@ -111,6 +128,7 @@ export default function App() {
               currencyName={toCurrency === 'USD' ? 'US Dollar' : 'Devise'}
               isReadOnly={true}
               valueColor="#0042a5"
+              onSelectCurrency={() => openModalFor('to')}
             />
 
             {/* Boutons Montants Rapides */}
@@ -125,6 +143,15 @@ export default function App() {
           </View>
         </SafeAreaView>
       </TouchableWithoutFeedback>
+
+      {/* Modale hors du TouchableWithoutFeedback pour ne pas bloquer les taps */}
+      <CurrencyModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSelect={handleSelectCurrency}
+        selectedCurrency={selectingTarget === 'from' ? fromCurrency : toCurrency}
+        rates={rates}
+      />
     </SafeAreaProvider>
   );
 }

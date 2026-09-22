@@ -12,7 +12,6 @@ export const fetchOnlineRates = async (): Promise<CurrencyRates | null> => {
     }
     return null;
   } catch (error) {
-    // Si pas de réseau ou erreur API
     return null;
   }
 };
