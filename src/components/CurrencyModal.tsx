@@ -1,4 +1,3 @@
-// src/components/CurrencyModal.tsx
 import React, { useState } from 'react';
 import {
   Modal,
@@ -7,11 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  StyleSheet,
-  SafeAreaView,
+  ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Search, X, Check } from 'lucide-react-native';
 import { getCurrencyFlag } from '../utils/flag';
+import { getCurrencyName } from '../utils/currencies';
+import { getCurrencyRegions } from '../utils/regions';
 import { CurrencyRates } from '../types/currency';
 
 interface CurrencyModalProps {
@@ -22,7 +22,16 @@ interface CurrencyModalProps {
   rates: CurrencyRates;
 }
 
-const REGIONS = ['Tous', 'Populaires', 'Europe', 'Amériques', 'Asie'];
+const REGIONS = [
+  'Tous',
+  'Populaires',
+  'Europe',
+  'Amériques',
+  'Asie',
+  'Moyen-Orient',
+  'Afrique',
+  'Océanie',
+];
 
 export const CurrencyModal: React.FC<CurrencyModalProps> = ({
   visible,
@@ -39,86 +48,114 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({
     rate,
   }));
 
-  const filteredCurrencies = currenciesArray.filter((item) =>
-    item.code.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCurrencies = currenciesArray
+    .filter(
+      (item) =>
+        item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getCurrencyName(item.code).toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter(
+      (item) =>
+        selectedRegion === 'Tous' ||
+        getCurrencyRegions(item.code).includes(selectedRegion)
+    );
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.sheetContainer}>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View className="flex-1 bg-black/40 justify-end">
+        <View className="bg-white rounded-t-3xl h-[80%] px-5 pt-2.5">
           {/* Poignée supérieure */}
-          <View style={styles.handle} />
+          <View className="w-9 h-1 bg-slate-200 rounded-full self-center my-2" />
 
           {/* En-tête */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Sélectionner une devise</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeText}>✕</Text>
+          <View className="flex-row justify-between items-center my-2.5">
+            <Text className="text-xl font-bold text-slate-900">Sélectionner une devise</Text>
+            <TouchableOpacity
+              className="w-8 h-8 rounded-full bg-slate-100 items-center justify-center"
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <X size={14} color="#64748b" strokeWidth={2.5} />
             </TouchableOpacity>
           </View>
 
           {/* Barre de recherche */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={18} color="#888" style={styles.searchIcon} />
+          <View className="flex-row items-center bg-slate-100 rounded-2xl px-3.5 h-12 my-2.5">
+            <Search size={18} color="#94a3b8" className="mr-2" />
             <TextInput
-              style={styles.searchInput}
+              className="flex-1 text-sm text-slate-900 placeholder:text-slate-400"
               placeholder="Rechercher par nom ou code (ex: USD)"
-              placeholderTextColor="#888"
+              placeholderTextColor="#94a3b8"
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
           </View>
 
           {/* Chips de régions */}
-          <View style={styles.regionsContainer}>
-            {REGIONS.map((region) => {
-              const isSelected = selectedRegion === region;
-              return (
-                <TouchableOpacity
-                  key={region}
-                  style={[styles.chip, isSelected && styles.chipSelected]}
-                  onPress={() => setSelectedRegion(region)}
-                >
-                  <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
-                    {region}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-grow-0 my-2.5">
+            <View className="flex-row">
+              {REGIONS.map((region) => {
+                const isSelected = selectedRegion === region;
+                return (
+                  <TouchableOpacity
+                    key={region}
+                    className={`px-3.5 py-2 rounded-full mr-2 ${
+                      isSelected ? 'bg-blue-100' : 'bg-slate-100'
+                    }`}
+                    onPress={() => setSelectedRegion(region)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      className={`text-[13px] ${
+                        isSelected ? 'text-blue-600 font-bold' : 'text-slate-500'
+                      }`}
+                    >
+                      {region}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
 
           {/* Liste des devises */}
           <FlatList
             data={filteredCurrencies}
             keyExtractor={(item) => item.code}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
               const isSelected = item.code === selectedCurrency;
               return (
                 <TouchableOpacity
-                  style={[styles.itemCard, isSelected && styles.itemCardSelected]}
+                  className={`flex-row justify-between items-center bg-slate-50 rounded-2xl p-3.5 my-1.5 ${
+                    isSelected ? 'bg-blue-50 border border-blue-600' : ''
+                  }`}
                   onPress={() => {
                     onSelect(item.code);
                     onClose();
                   }}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.itemLeft}>
-                    <View style={styles.flagCircle}>
-                      <Text style={styles.flagText}>{getCurrencyFlag(item.code)}</Text>
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-3">
+                      <Text className="text-[22px]">{getCurrencyFlag(item.code)}</Text>
                     </View>
                     <View>
-                      <Text style={styles.itemCode}>{item.code}</Text>
-                      <Text style={styles.itemName}>Taux officiel</Text>
+                      <Text className="text-base font-bold text-slate-900">{item.code}</Text>
+                      <Text className="text-xs text-gray-500" numberOfLines={1}>
+                        {getCurrencyName(item.code)}
+                      </Text>
                     </View>
                   </View>
 
-                  <View style={styles.itemRight}>
-                    <Text style={styles.itemRate}>{item.rate.toFixed(4)}</Text>
+                  <View className="flex-row items-center">
+                    <Text className="text-[15px] font-semibold text-slate-900 mr-2">
+                      {item.rate.toFixed(4)}
+                    </Text>
                     {isSelected && (
-                      <View style={styles.checkCircle}>
-                        <Text style={styles.checkText}>✓</Text>
+                      <View className="w-6 h-6 rounded-full bg-blue-600 items-center justify-center">
+                        <Check size={14} color="#ffffff" strokeWidth={3} />
                       </View>
                     )}
                   </View>
@@ -131,155 +168,3 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheetContainer: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    height: '80%',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginVertical: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f0f2f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: 'bold',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f4f8',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    height: 48,
-    marginVertical: 10,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1a1a1a',
-  },
-  regionsContainer: {
-    flexDirection: 'row',
-    marginVertical: 10,
-  },
-  chip: {
-    backgroundColor: '#f0f2f5',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
-    marginRight: 8,
-  },
-  chipSelected: {
-    backgroundColor: '#dce6f9',
-  },
-  chipText: {
-    fontSize: 13,
-    color: '#555',
-  },
-  chipTextSelected: {
-    color: '#0042a5',
-    fontWeight: 'bold',
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  itemCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fc',
-    borderRadius: 18,
-    padding: 14,
-    marginVertical: 5,
-  },
-  itemCardSelected: {
-    backgroundColor: '#e8edf5',
-    borderWidth: 1,
-    borderColor: '#0042a5',
-  },
-  itemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flagCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  flagText: {
-    fontSize: 22,
-  },
-  itemCode: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  itemName: {
-    fontSize: 12,
-    color: '#777',
-  },
-  itemRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemRate: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginRight: 8,
-  },
-  checkCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#0042a5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-});

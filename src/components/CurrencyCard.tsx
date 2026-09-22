@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ChevronDown } from 'lucide-react-native';
 import { getCurrencyFlag } from '../utils/flag';
 import { getCurrencyName } from '../utils/currencies';
 
@@ -41,10 +42,11 @@ export const CurrencyCard: React.FC<CurrencyCardProps> = ({
   const fontSize = getDynamicFontSize(displayValue);
 
   return (
-    <View style={styles.card}>
+    <View className="flex-row items-center justify-between bg-white rounded-3xl p-4 shadow-sm border border-slate-100">
       {isReadOnly ? (
         <Text
-          style={[styles.amountText, { color: valueColor, fontSize }]}
+          className="font-bold flex-1 mr-2.5 min-w-0"
+          style={{ color: valueColor, fontSize }}
           adjustsFontSizeToFit={true}
           numberOfLines={1}
           minimumFontScale={0.5}
@@ -53,83 +55,30 @@ export const CurrencyCard: React.FC<CurrencyCardProps> = ({
         </Text>
       ) : (
         <TextInput
-          style={[styles.input, { color: valueColor, fontSize }]}
+          className="font-bold flex-1 mr-2.5 min-w-0 text-slate-900 placeholder:text-gray-400"
+          style={{ fontSize }}
           value={amount}
           onChangeText={onChangeAmount}
           keyboardType="numeric"
           placeholder="0,00"
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#9ca3af"
         />
       )}
 
-      <TouchableOpacity style={styles.pickerButton} onPress={onSelectCurrency} activeOpacity={0.7}>
-        <Text style={styles.flag}>{getCurrencyFlag(currencyCode)}</Text>
-        <View style={styles.currencyInfo}>
-          <Text style={styles.currencyCode}>{currencyCode}</Text>
-          <Text style={styles.currencyName} numberOfLines={1}>{getCurrencyName(currencyCode)}</Text>
+      <TouchableOpacity
+        className="bg-slate-100 px-3 py-2 rounded-2xl flex-row items-center gap-2 flex-shrink-0 max-w-[60%]"
+        onPress={onSelectCurrency}
+        activeOpacity={0.7}
+      >
+        <Text className="text-xl">{getCurrencyFlag(currencyCode)}</Text>
+        <View className="mr-1 max-w-[105px]">
+          <Text className="text-sm font-bold text-slate-900">{currencyCode}</Text>
+          <Text className="text-[10px] text-gray-500" numberOfLines={1}>
+            {getCurrencyName(currencyCode)}
+          </Text>
         </View>
-        <Text style={styles.arrow}>⌵</Text>
+        <ChevronDown size={16} color="#475569" />
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  input: {
-    fontWeight: 'bold',
-    flex: 1,
-    marginRight: 10,
-    minWidth: 0,
-  },
-  amountText: {
-    fontWeight: 'bold',
-    flex: 1,
-    marginRight: 10,
-    minWidth: 0,
-  },
-  pickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e8edf5',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 18,
-    flexShrink: 0,
-    maxWidth: 160,
-  },
-  flag: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  currencyInfo: {
-    marginRight: 6,
-    maxWidth: 90,
-  },
-  currencyCode: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  currencyName: {
-    fontSize: 10,
-    color: '#666',
-  },
-  arrow: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: 'bold',
-  },
-});

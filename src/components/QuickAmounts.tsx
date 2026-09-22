@@ -1,6 +1,5 @@
-// src/components/QuickAmounts.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
 interface QuickAmountsProps {
   selectedAmount: string;
@@ -10,18 +9,17 @@ interface QuickAmountsProps {
 
 const AMOUNTS = ['100', '250', '500', '1000'];
 
-/** Retourne le symbole court d'une devise (€, $, £…) ou le code ISO si non trouvé. */
+/** Retourne le symbole court d'une devise (€, $, £…) ou le code ISO si trop ambigu. */
 const getCurrencySymbol = (code: string): string => {
   try {
-    // Intl.NumberFormat retourne le symbole localisé pour la devise
     const formatted = new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: code,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(0);
-    // Extrait uniquement le symbole (retire les chiffres et espaces)
-    return formatted.replace(/[\d\s\u00A0\u202F,]/g, '').trim() || code;
+    const symbol = formatted.replace(/[\d\s\u00A0\u202F,]/g, '').trim();
+    return symbol.length > 2 ? code : symbol;
   } catch {
     return code;
   }
@@ -35,18 +33,25 @@ export const QuickAmounts: React.FC<QuickAmountsProps> = ({
   const symbol = getCurrencySymbol(currencyCode);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Rapide :</Text>
-      <View style={styles.buttonsContainer}>
+    <View className="flex-row items-center mt-3">
+      <Text className="text-[13px] text-gray-500 mr-2.5">Rapide :</Text>
+      <View className="flex-row flex-1 justify-between">
         {AMOUNTS.map((amt) => {
           const isSelected = selectedAmount === amt;
           return (
             <TouchableOpacity
               key={amt}
-              style={[styles.button, isSelected && styles.buttonSelected]}
+              className={`px-3 py-2 rounded-2xl ${
+                isSelected ? 'bg-blue-600' : 'bg-slate-100'
+              }`}
               onPress={() => onSelect(amt)}
+              activeOpacity={0.7}
             >
-              <Text style={[styles.text, isSelected && styles.textSelected]}>
+              <Text
+                className={`text-[13px] font-semibold ${
+                  isSelected ? 'text-white' : 'text-slate-700'
+                }`}
+              >
                 {amt} {symbol}
               </Text>
             </TouchableOpacity>
@@ -56,38 +61,3 @@ export const QuickAmounts: React.FC<QuickAmountsProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 15,
-  },
-  label: {
-    fontSize: 13,
-    color: '#666',
-    marginRight: 10,
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  button: {
-    backgroundColor: '#f0f2f5',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  buttonSelected: {
-    backgroundColor: '#0042a5',
-  },
-  text: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  textSelected: {
-    color: '#ffffff',
-  },
-});
